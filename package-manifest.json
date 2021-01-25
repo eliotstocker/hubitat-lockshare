@@ -1,0 +1,29 @@
+{
+  "packageName": "LockShare",
+  "author": "Eliot Stocker",
+  "version": "0.1.0",
+  "minimumHEVersion": "0.0",
+  "dateReleased": "2021-01-25",
+  "apps": [
+    {
+      "id": "1176ed0e-0393-4efa-b1c3-19b7911e7522",
+      "name": "LockShare",
+      "namespace": "re.locksha",
+      "location": "https://raw.githubusercontent.com/eliotstocker/hubitat-lockshare/main/LockShare.groovy",
+      "required": true,
+      "oauth": false,
+      "primary": true
+    },
+    {
+      "id": "c36110f1-ba08-42b0-842e-5a2c5837e9ca",
+      "name": "LockShare Setup",
+      "namespace": "re.locksha",
+      "location": "https://raw.githubusercontent.com/eliotstocker/hubitat-lockshare/main/LockShare-Setup.groovy",
+      "required": true,
+      "oauth": true,
+      "primary": false
+    }
+  ],
+  "licenseFile": "https://raw.githubusercontent.com/eliotstocker/hubitat-lockshare/main/LICENSE",
+  "documentationLink": "https://locksha.re/"
+}
