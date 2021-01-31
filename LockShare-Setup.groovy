@@ -58,8 +58,16 @@ def initialize() {
     }
 }
 
+version = "0.1.1"
 qrSize = 200
-
+messages = [
+        deviceIdMismatch: "Unique Device ID does not match, please ask the location owner to reset your access",
+        outsideOfSchedule: "You are currently outside of your granted access time",
+        invalidInput: "App error, Input invalid, please contact the LockShare developers",
+        unknownDevice: "This device has been removed, please contact location owner to check your access",
+        invalidCommand: "Invalid command sent",
+        codeUsed: "Code already used, please contact the homeowner in order to reset acceptance..."
+]
 
 def sectionHeader(description) {
     sectionHeader(null, description)
@@ -234,7 +242,7 @@ mappings {
     path("/share/:id") {
         action:
         [
-                GET: "getDevices",
+                GET: "getDevice",
                 POST: "processLockCommand"
         ]
     }
@@ -310,26 +318,22 @@ def processLockCommand() {
     }
     catch (e) {
         log.error "JSON received from app is invalid! ${request.body}"
-        renderError(400, "Input invalid")
-        return
+        return renderError(400, messages.invalidInput)
     }
 
     if(!checkDeviceIdHeader(request)) {
-        renderError(401, "unique device Id incorrect")
-        return
+        return renderError(401, messages.deviceIdMismatch)
     }
 
 
     def lock = locks.find {it.id == params.id}
 
     if(!lock) {
-        renderError(404, "unknown device");
-        return
+        return renderError(404, messages.unknownDevice);
     }
 
     if(!isWithinSchedule()) {
-        renderError(425, "outside of access schedule");
-        return
+        return renderError(425, messages.outsideOfSchedule);
     }
 
     if(json.command == "unlock") {
@@ -337,8 +341,7 @@ def processLockCommand() {
     } else if(json.command == "lock") {
         lock.lock()
     } else {
-        renderError(404, "unknown command: ${json.command}");
-        return
+        return renderError(404, "${messages.invalidCommand}: ${json.command}");
     }
 
     if(notifyOpperation && notifyDevice) {
@@ -346,20 +349,25 @@ def processLockCommand() {
     }
 
     return [
+            service: [
+                    version: version
+            ],
             id: lock.id,
             name: lock.displayName,
             status: json.command == "lock" ? "locking" : "unlocking"
     ]
 }
 
-def getDevices() {
+def getDevice() {
     if(!checkDeviceIdHeader(request)) {
-        renderError(404, "unknown device");
-        return
+        return renderError(401, messages.deviceIdMismatch);
     }
 
     def device = locks.find {it.id == params.id}
     return [
+            service: [
+                    version: version
+            ],
             name: device.displayName,
             id: device.id,
             status: isWithinSchedule() ? device.currentStates.find { it.name == "lock" }.value : 'unavailable'
@@ -403,15 +411,15 @@ def processAcceptance() {
     }
     catch (e) {
         log.error "JSON received from app is invalid! ${request.body}"
-        renderError(400, "Input invalid")
-        return
+        return renderError(400, messages.invalidInput)
     }
 
     if((singleAcceptance || singleAcceptance == null) && state.accepted) {
-        notifyDevice.deviceNotification("LockShare: \"${app.label}\" attempted to accept on Device: \"${deviceName}\"")
-        return [
-                "status": "code already used..."
-        ]
+        if(notifyDevice) {
+            notifyDevice.deviceNotification("LockShare: \"${app.label}\" attempted to accept on Device: \"${deviceName}\"")
+        }
+
+        return renderError(401, messages.codeUsed)
     }
 
     def deviceName = json.device
@@ -430,18 +438,23 @@ def processAcceptance() {
     }
 
     return [
-            "status": "accepted",
-            "uuid": state.deviceId
+            service: [
+                    version: version
+            ],
+            status: "accepted",
+            uuid: state.deviceId
     ]
 }
 
 def listAvailableDevices() {
     if(!checkDeviceIdHeader(request)) {
-        renderError(401, "unique device Id incorrect")
-        return
+        return renderError(401, messages.deviceIdMismatch)
     }
 
     return [
+            service: [
+                    version: version
+            ],
             name: app.label,
             location: getLocation().name,
             schedule: getSchedule(),
@@ -488,7 +501,13 @@ def getFormat(type, text=""){            // Modified from @Stephack Code
 }
 
 def renderError(int code, String data) {
-    renderError(code, [error: data])
+    return renderError(code, [
+            error: true,
+            message: data,
+            service: [
+                    version: version
+            ],
+    ])
 }
 
 def renderError(int code, Map data) {

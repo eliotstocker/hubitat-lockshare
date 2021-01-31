@@ -1,9 +1,9 @@
 {
   "packageName": "LockShare",
   "author": "Eliot Stocker",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minimumHEVersion": "0.0",
-  "dateReleased": "2021-01-25",
+  "dateReleased": "2021-01-31",
   "apps": [
     {
       "id": "1176ed0e-0393-4efa-b1c3-19b7911e7522",
