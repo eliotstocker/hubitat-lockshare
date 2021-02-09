@@ -4,6 +4,8 @@
   "version": "0.1.1",
   "minimumHEVersion": "0.0",
   "dateReleased": "2021-01-31",
+  "communityLink": "https://community.hubitat.com/t/beta-release-lockshare-simply-share-access-to-smart-locks-with-complete-control/64981",
+  "releaseNotes": "Initial Beta Release 1",
   "apps": [
     {
       "id": "1176ed0e-0393-4efa-b1c3-19b7911e7522",
